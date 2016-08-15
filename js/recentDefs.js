@@ -27,11 +27,11 @@ function clickRemoveHist(event) {
 }
 
 //Make a circle button
-function make_button(icon, link){
+function make_button(icon, link, btn_type){
     var btn = document.createElement('a');
     btn.type = "button";
-    btn.className = 'btn btn-default btn-circle';
-    var btn_span = document.createElement('span');
+    btn.className = 'btn btn-'.concat(btn_type,' btn-circle inline pull-left');
+    var btn_span = document.createElement('i');
     btn_span.className = icon;
     btn.appendChild(btn_span);
     btn.setAttribute("role","button");
@@ -46,25 +46,24 @@ function buildPopupDom(divName, titles) {
   var popupDiv = document.getElementById(divName);
   console.log(popupDiv);
   for (var title in titles) {
-    var a = document.createElement('a');
-    a.href = titles[title];
-    a.addEventListener('click', clickOpenTab);
-    a.title = title;
-    a.appendChild(document.createTextNode(title));
 
-    var bookmark = make_button("glyphicon glyphicon-ok-sign", titles[title]);
-    var remove = make_button("glyphicon glyphicon-remove-sign", titles[title]);
-    var learn = make_button("glyphicon glyphicon-education", titles[title]);
+    var word = document.createElement('span');
+    word.className = "inline";
+    word.appendChild(document.createTextNode(title));
+
+    var bookmark = make_button("glyphicon glyphicon-ok", titles[title], 'success');
+    var remove = make_button("glyphicon glyphicon-remove", titles[title], 'warning');
+    var learn = make_button("glyphicon glyphicon-education", titles[title], 'info');
     learn.addEventListener('click', clickOpenTab);
     remove.addEventListener('click', clickRemoveHist);
 
     var row = document.createElement("div");
-    row.className = "row";
+    row.className = "clearfix";
 
     row.appendChild(bookmark);
     row.appendChild(remove);
     row.appendChild(learn);
-    row.appendChild(a);
+    row.appendChild(word);
     popupDiv.appendChild(row);
 
   }

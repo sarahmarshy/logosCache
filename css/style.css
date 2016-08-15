@@ -1,26 +1,19 @@
 body{
 	min-width:300px;
 	font-family: 'Ubuntu', sans-serif;
+	font-size: 150%;
 }
-.page-header{
-	height: 70px;
-	background-color: #40E0D0; 
-	color: white;
-	position: relative;
-}
-h4 {
-	position: absolute;
-	bottom:0;
+span{
+	padding: 5px;
 }
 .btn-circle {
-    width: 30px;
-    height: 30px;
-    text-align: center;
-    padding: 6px 0;
-    font-size: 12px;
-    line-height: 1.428571429;
-    border-radius: 15px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  border-radius: 15px;
 }
-.row{
+.clearfix{
 	padding: 5px;
 }
