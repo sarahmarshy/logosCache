@@ -1,0 +1,14 @@
+{
+  "name": "Recently Searched Definitions",
+  "version": "0.0",
+  "description": "Reads your history, and shows words you have recently looked up.",
+  "permissions": [
+    "history"
+  ],
+  "browser_action": {
+    "default_popup": "recentDefs.html",
+    "default_icon": "imgs/book.png"
+  },
+  "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'",
+  "manifest_version": 2
+}
