@@ -17,3 +17,7 @@ span{
 .clearfix{
 	padding: 5px;
 }
+p{
+	text-align: center;
+	padding: 5px;
+}

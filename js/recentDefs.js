@@ -15,13 +15,28 @@ function clickOpenTab(event) {
   return false;
 }
 
+//Check if our parent has no elements, or we haven't searched anything recently
+function checkEmpty(mainDiv){
+  var numElements = mainDiv.getElementsByTagName("div").length;
+  if (!numElements){
+    var par = document.createElement('p');
+    var message = document.createElement('i');
+    message.appendChild(document.createTextNode('No recently searched definitions.'))
+    par.appendChild(message)
+    mainDiv.appendChild(par)
+  }
+
+}
+
 //Event listener for clicks on the remove button
 function clickRemoveHist(event) {
   chrome.history.deleteUrl({
     url: event.srcElement.href
   }, function(){
       var row = event.srcElement.parentNode;
-      row.parentNode.removeChild(row);
+      var parent = row.parentNode
+      parent.removeChild(row);
+      checkEmpty(parent);
   });
   return false;
 }
@@ -67,6 +82,7 @@ function buildPopupDom(divName, titles) {
     popupDiv.appendChild(row);
 
   }
+  checkEmpty(popupDiv);
 }
 
 var titleToUrl ={}
