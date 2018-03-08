@@ -87,7 +87,6 @@ function buildPopupDom(divName, titles) {
   checkEmpty(popupDiv);
 }
 
-var titleToUrl ={}
 
 // Search history to find up to find the words user has looked up in the past week
 // Looks for "define <word>"
@@ -99,6 +98,7 @@ function buildTypedUrlList(divName) {
   var oneWeekAgo = currentTime - microsecondsPerWeek;
   var lastTime = 0;
   
+  var titleToUrl ={};
   chrome.storage.sync.get('timestamp',  function(items) {
                                             if(chrome.runtime.lastError) {
                                                 lastTime = oneWeekago;
@@ -138,13 +138,6 @@ function buildTypedUrlList(divName) {
         var title = match[1].trim();
         if(!titleToUrl[title]){
         	titleToUrl[title] = url;
-        }
-        else {
-          // Delete duplicates
-          // User is given the option to delete a word look-up later
-          chrome.history.deleteUrl({
-            'url': url
-          });
         }
       }
       chrome.storage.sync.set({'urls': titleToUrl}, function() {});
