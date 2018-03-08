@@ -7,7 +7,6 @@
 
 // Event listner for clicks on the learn button for each word
 function clickOpenTab(event) {
-  console.log(event.srcElement.href);
   chrome.tabs.create({
     selected: true,
     url: event.srcElement.href
@@ -28,32 +27,42 @@ function checkEmpty(mainDiv){
 
 }
 
+var urls = {};
 //Event listener for clicks on the remove button
-function clickRemoveHist(event) {
-  chrome.history.deleteUrl({
-    url: event.srcElement.href
-  }, function(){
-      var row = event.srcElement.parentNode;
+function clickRemoveHist(id, element) {
+  console.log(id);
+  chrome.storage.sync.get('urls',  function(items) {
+    if(chrome.runtime.lastError) {
+    } else {
+        urls = items['urls'];
+        delete urls[id];
+    }
+    console.log(urls);
+    chrome.storage.sync.set({'urls': urls}, function(){
+      var row = element.parentNode;
       var parent = row.parentNode
       parent.removeChild(row);
       checkEmpty(parent);
+    });
   });
   return false;
 }
 
 //Make a circle button
 function make_button(icon, link, btn_type, name){
-    var btn = document.createElement('a');
+    var btn = document.createElement('button');
     btn.type = "button";
     btn.className = 'btn btn-'.concat(btn_type,' btn-circle inline pull-left');
-    var btn_span = document.createElement('i');
+    var btn_span = document.createElement('span');
     btn_span.className = icon;
     btn.appendChild(btn_span);
     btn.setAttribute("role","button");
-    btn.href = link;
     btn.id = name;
-    console.log(btn);
     return btn;
+}
+
+function eventHistFunc(t, element) {
+    return function() { clickRemoveHist(t, element) };
 }
 
 // Given an array of URLs, build a DOM of buttons and links
@@ -61,23 +70,20 @@ function make_button(icon, link, btn_type, name){
 // Gives option to delete from history, view definition, or save
 function buildPopupDom(divName, titles) {
   var popupDiv = document.getElementById(divName);
-  console.log(popupDiv);
   for (var title in titles) {
 
     var word = document.createElement('span');
     word.className = "inline";
     word.appendChild(document.createTextNode(title));
 
-    var bookmark = make_button("glyphicon glyphicon-ok", titles[title], 'success', title);
     var remove = make_button("glyphicon glyphicon-remove", titles[title], 'warning', title);
     var learn = make_button("glyphicon glyphicon-education", titles[title], 'info', title);
-    learn.addEventListener('click', clickOpenTab);
-    remove.addEventListener('click', clickRemoveHist);
+    learn.addEventListener('click', clickOpenTab, true);
+    remove.addEventListener('click', eventHistFunc(title, remove));
 
     var row = document.createElement("div");
     row.className = "clearfix";
 
-    row.appendChild(bookmark);
     row.appendChild(remove);
     row.appendChild(learn);
     row.appendChild(word);
@@ -87,40 +93,13 @@ function buildPopupDom(divName, titles) {
   checkEmpty(popupDiv);
 }
 
-
-// Search history to find up to find the words user has looked up in the past week
-// Looks for "define <word>"
-function buildTypedUrlList(divName) {
-  // To look for history items visited in the last week,
-  // subtract a week of microseconds from the current time.
-  var microsecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
-  var currentTime = (new Date).getTime();
-  var oneWeekAgo = currentTime - microsecondsPerWeek;
-  var lastTime = 0;
-  
-  var titleToUrl ={};
-  chrome.storage.sync.get('timestamp',  function(items) {
-                                            if(chrome.runtime.lastError) {
-                                                lastTime = oneWeekago;
-                                            } else {
-                                                lastTime = items['timestamp'];
-                                            }
-                                        }
-                        );
-  chrome.storage.sync.set({'timestamp': (new Date).getTime()}, function () {});
-  chrome.storage.sync.get('urls',  function(items) {
-                                            if(chrome.runtime.lastError) {
-                                                
-                                            } else {
-                                                titleToUrl = items['urls'];
-                                                console.log(titleToUrl);
-                                            }
-                                        }
-                        );
-
+function buildUrlList(time, divName, urls) {
+  console.log(divName);
+  console.log(time);
+  console.log(urls);
   chrome.history.search({
       'text': 'google.com.*q=define', // get google searches for word definitions
-      'startTime': lastTime  // that was accessed less than one week ago.
+      'startTime': time 
     },
     function(historyItems) {
       // For each history item, find if it was a user defining a word
@@ -136,13 +115,50 @@ function buildTypedUrlList(divName) {
         	continue;
         }
         var title = match[1].trim();
-        if(!titleToUrl[title]){
-        	titleToUrl[title] = url;
+        if(!urls[title]){
+        	urls[title] = url;
         }
       }
-      chrome.storage.sync.set({'urls': titleToUrl}, function() {});
-      buildPopupDom(divName, titleToUrl);
+      chrome.storage.sync.set({'urls': urls}, function() {});
+      buildPopupDom(divName, urls);
     });
+}
+
+function getUrls(time, divName, cb) {
+    chrome.storage.sync.get('urls',  function(items) {
+        if(chrome.runtime.lastError) {
+            
+        } else {
+            cb(time, divName, items['urls']);
+        }
+    });
+}
+
+function getTimeStamp(cb) {
+    chrome.storage.sync.get('timestamp',  function(items) {
+        var microsecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
+        var currentTime = (new Date).getTime();
+        var oneWeekAgo = currentTime - microsecondsPerWeek;
+        if(chrome.runtime.lastError) {
+            cb(oneWeekago);
+        } else {
+            cb(items['timestamp']);
+        }
+    });
+}
+
+// Search history to find up to find the words user has looked up in the past week
+// Looks for "define <word>"
+function buildTypedUrlList(divName) {
+  // To look for history items visited in the last week,
+  // subtract a week of microseconds from the current time.
+  var lastTime = 0;
+  
+  var titleToUrl ={};
+  getTimeStamp(function(t) { 
+    getUrls(t, divName, buildUrlList); 
+  });
+  chrome.storage.sync.set({'timestamp': (new Date).getTime()}, function () {});
 }
 
 document.addEventListener('DOMContentLoaded', function () {
