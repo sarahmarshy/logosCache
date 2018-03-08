@@ -42,7 +42,7 @@ function clickRemoveHist(event) {
 }
 
 //Make a circle button
-function make_button(icon, link, btn_type){
+function make_button(icon, link, btn_type, name){
     var btn = document.createElement('a');
     btn.type = "button";
     btn.className = 'btn btn-'.concat(btn_type,' btn-circle inline pull-left');
@@ -51,6 +51,8 @@ function make_button(icon, link, btn_type){
     btn.appendChild(btn_span);
     btn.setAttribute("role","button");
     btn.href = link;
+    btn.id = name;
+    console.log(btn);
     return btn;
 }
 
@@ -66,9 +68,9 @@ function buildPopupDom(divName, titles) {
     word.className = "inline";
     word.appendChild(document.createTextNode(title));
 
-    var bookmark = make_button("glyphicon glyphicon-ok", titles[title], 'success');
-    var remove = make_button("glyphicon glyphicon-remove", titles[title], 'warning');
-    var learn = make_button("glyphicon glyphicon-education", titles[title], 'info');
+    var bookmark = make_button("glyphicon glyphicon-ok", titles[title], 'success', title);
+    var remove = make_button("glyphicon glyphicon-remove", titles[title], 'warning', title);
+    var learn = make_button("glyphicon glyphicon-education", titles[title], 'info', title);
     learn.addEventListener('click', clickOpenTab);
     remove.addEventListener('click', clickRemoveHist);
 
@@ -93,11 +95,32 @@ function buildTypedUrlList(divName) {
   // To look for history items visited in the last week,
   // subtract a week of microseconds from the current time.
   var microsecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
-  var oneWeekAgo = (new Date).getTime() - microsecondsPerWeek;
+  var currentTime = (new Date).getTime();
+  var oneWeekAgo = currentTime - microsecondsPerWeek;
+  var lastTime = 0;
+  
+  chrome.storage.sync.get('timestamp',  function(items) {
+                                            if(chrome.runtime.lastError) {
+                                                lastTime = oneWeekago;
+                                            } else {
+                                                lastTime = items['timestamp'];
+                                            }
+                                        }
+                        );
+  chrome.storage.sync.set({'timestamp': (new Date).getTime()}, function () {});
+  chrome.storage.sync.get('urls',  function(items) {
+                                            if(chrome.runtime.lastError) {
+                                                
+                                            } else {
+                                                titleToUrl = items['urls'];
+                                                console.log(titleToUrl);
+                                            }
+                                        }
+                        );
 
   chrome.history.search({
       'text': 'google.com.*q=define', // get google searches for word definitions
-      'startTime': oneWeekAgo  // that was accessed less than one week ago.
+      'startTime': lastTime  // that was accessed less than one week ago.
     },
     function(historyItems) {
       // For each history item, find if it was a user defining a word
@@ -124,6 +147,7 @@ function buildTypedUrlList(divName) {
           });
         }
       }
+      chrome.storage.sync.set({'urls': titleToUrl}, function() {});
       buildPopupDom(divName, titleToUrl);
     });
 }

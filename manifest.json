@@ -3,7 +3,8 @@
   "version": "0.0",
   "description": "Reads your history, and shows words you have recently looked up.",
   "permissions": [
-    "history"
+    "history",
+    "storage"
   ],
   "browser_action": {
     "default_popup": "recentDefs.html",
