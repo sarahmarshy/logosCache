@@ -107,7 +107,7 @@ function buildTypedUrlList(divName) {
         var decode_url = decodeURI(url).replace('+', ' ');
         var decode_url = decode_url.replace('%3A', ' ');
 
-        var myRe = /google.com.*q=define.*?([A-Za-z\s]+)/g;
+        var myRe = /google.com.*q=define+([A-Za-z\s]+)/g;
         var match = myRe.exec(decode_url);
         if (!match){
         	continue;
