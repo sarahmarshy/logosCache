@@ -6,11 +6,17 @@
 
 
 // Event listner for clicks on the learn button for each word
-function clickOpenTab(event) {
-  chrome.tabs.create({
-    selected: true,
-    url: event.srcElement.href
-  });
+function clickOpenTab(id) {
+    chrome.storage.sync.get('urls',  function(items) {
+        if(chrome.runtime.lastError) {
+        } else {
+            urls = items['urls'];
+            chrome.tabs.create({
+                selected: true,
+                url: urls[id]
+            });
+        }
+    });
   return false;
 }
 
@@ -65,6 +71,10 @@ function eventHistFunc(t, element) {
     return function() { clickRemoveHist(t, element) };
 }
 
+function eventTabFunc(t) {
+    return function() { clickOpenTab(t) };
+}
+
 // Given an array of URLs, build a DOM of buttons and links
 // Displays words looked up in chrome in the last week
 // Gives option to delete from history, view definition, or save
@@ -78,7 +88,7 @@ function buildPopupDom(divName, titles) {
 
     var remove = make_button("glyphicon glyphicon-remove", titles[title], 'warning', title);
     var learn = make_button("glyphicon glyphicon-education", titles[title], 'info', title);
-    learn.addEventListener('click', clickOpenTab, true);
+    learn.addEventListener('click', eventTabFunc(title));
     remove.addEventListener('click', eventHistFunc(title, remove));
 
     var row = document.createElement("div");
