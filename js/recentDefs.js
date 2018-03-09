@@ -106,6 +106,9 @@ function buildPopupDom(divName, titles) {
 function buildUrlList(time, divName, urls) {
   console.log(divName);
   console.log(time);
+  if (typeof urls == 'undefined') {
+    urls = {}
+  }
   console.log(urls);
   chrome.history.search({
       'text': 'google.com.*q=define', // get google searches for word definitions
@@ -137,7 +140,7 @@ function buildUrlList(time, divName, urls) {
 function getUrls(time, divName, cb) {
     chrome.storage.sync.get('urls',  function(items) {
         if(chrome.runtime.lastError) {
-            
+            cb(time, divName, {});
         } else {
             cb(time, divName, items['urls']);
         }
@@ -163,8 +166,6 @@ function buildTypedUrlList(divName) {
   // To look for history items visited in the last week,
   // subtract a week of microseconds from the current time.
   var lastTime = 0;
-  
-  var titleToUrl ={};
   getTimeStamp(function(t) { 
     getUrls(t, divName, buildUrlList); 
   });
